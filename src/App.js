@@ -1,7 +1,8 @@
 import './App.css';
 import { commerce } from './lib/commerce'
-import { Products, NavBar, Cart } from './components'
+import { Products, NavBar, Cart, Checkout } from './components'
 import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 
 function App() {
@@ -18,9 +19,27 @@ function App() {
     }
 
     const handleAddToCart = async (productId, quantity) => {
-        const item = await commerce.cart.add(productId,quantity);
+        const { cart } = await commerce.cart.add(productId,quantity);
 
-        setCart(item.cart)
+        setCart(cart)
+    }
+
+    const handleUpdateCartQty = async (producId, quantity) => {
+        const { cart } = await commerce.cart.update(producId, { quantity });
+
+        setCart(cart);
+    }
+
+    const handleRemoveFromCart = async (productId) => {
+        const { cart } = await commerce.cart.remove(productId);
+
+        setCart(cart);
+    }
+
+    const handleEmptyCart = async () => {
+        const { cart } = await commerce.cart.empty();
+
+        setCart(cart);
     }
 
     useEffect(() => {
@@ -29,11 +48,27 @@ function App() {
     }, []);
 
   return (
-    <div className="App">
-        <NavBar totalItems={cart.total_items} />
-        {/* <Products products={products} onAddToCart={handleAddToCart}/> */}
-        <Cart cart={cart} />
-    </div>
+      <Router>
+            <div className="App">
+                <NavBar totalItems={cart.total_items} />
+                <Switch>
+                    <Route exact path="/">
+                        <Products products={products} onAddToCart={handleAddToCart}/>
+                    </Route>
+                    <Route exact path="/cart">
+                        <Cart
+                            cart={cart}
+                            handleUpdateCartQty={handleUpdateCartQty}
+                            handleRemoveFromCart={handleRemoveFromCart}
+                            handleEmptyCart={handleEmptyCart}
+                        />
+                    </Route>
+                    <Route exact path="/checkout">
+                        <Checkout />
+                    </Route>
+                </Switch>
+            </div>
+      </Router>
   );
 }
 
